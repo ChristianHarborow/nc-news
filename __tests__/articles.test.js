@@ -19,23 +19,17 @@ describe("GET /api/articles/:article_id", () => {
     test("200: returns the article object with the specified article_id", () => {
         return request(app).get("/api/articles/1").expect(200).then((response) => {
             const {article} = response.body
-
-            const properties = {
-                author: String,
-                title: String,
-                article_id: Number,
-                body: String,
-                topic: String,
-                created_at: String,
-                votes: Number,
-                article_img_url: String
+            const expectedArticle = {
+                article_id: 1,
+                title: 'Living in the shadow of a great man',
+                topic: 'mitch',
+                author: 'butter_bridge',
+                body: 'I find this existence challenging',
+                created_at: '2020-07-09T20:11:00.000Z',
+                votes: 100,
+                article_img_url: 'https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700'
             }
-
-            expect(Object.keys(article)).toHaveLength(Object.keys(properties).length)
-            
-            for (const [propName, propType] of Object.entries(properties)) {
-                expect(article).toHaveProperty(propName, expect.any(propType))
-            }
+            expect(article).toEqual(expectedArticle)
         })
     })
     test("404: returns a 404 status code and a relevent message when a valid but non-existant id is passed", () => {
