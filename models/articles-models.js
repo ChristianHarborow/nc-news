@@ -6,6 +6,7 @@ exports.readArticleById = (articleId) => {
         WHERE article_id = $1
     `, [articleId])
     .then(({rows}) => {
-        return rows[0]
+        if (rows[0]) return rows[0]
+        else return Promise.reject({status: 404, msg: "Article not found"})
     })
 }
