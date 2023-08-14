@@ -1,10 +1,5 @@
-const {readApiDetails} = require("../models/api-models")
+const api = require("../endpoints.json")
 
 exports.getApiDetails = (req, res, next) => {
-    readApiDetails().then((details) => {
-        res.status(200).send({api: details})
-    })
-    .catch((err) => {
-        next(err)
-    })
+    res.status(200).send({api})
 }
