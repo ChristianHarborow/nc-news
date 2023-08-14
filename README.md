@@ -1,3 +1,8 @@
 # Northcoders News API
 
-For instructions, please head over to [L2C NC News](https://l2c.northcoders.com/courses/be/nc-news).
+To connect to the server locally create the following .env files:
+- .env.test
+    - Should assign `"nc_news_test"` to an environment variable `PGDATABASE`
+- .env.development
+    - Should assign `"nc_news"` to an environment variable `PGDATABASE`
+
