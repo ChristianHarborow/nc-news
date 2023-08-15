@@ -45,3 +45,45 @@ describe("GET /api/articles/:article_id", () => {
         })
     })
 })
+
+describe("GET /api/articles", () => {
+    test("200: returns a 200 status code", () => {
+        return request(app).get("/api/articles").expect(200)
+    })
+    test("200: returns an array of all the articles stored in the articles table", () => {
+        return request(app).get("/api/articles").expect(200).then((response) => {
+            const {articles} = response.body
+
+            expect(articles).toHaveLength(13)
+
+            articles.forEach((article) => {
+                expect(Object.keys(article)).toHaveLength(8)
+
+                expect(article).toHaveProperty("author", expect.any(String))
+                expect(article).toHaveProperty("title", expect.any(String))
+                expect(article).toHaveProperty("article_id", expect.any(Number))
+                expect(article).toHaveProperty("topic", expect.any(String))
+                expect(article).toHaveProperty("created_at", expect.any(String))
+                expect(article).toHaveProperty("votes", expect.any(Number))
+                expect(article).toHaveProperty("article_img_url", expect.any(String))
+                expect(article).toHaveProperty("comment_count", expect.any(Number))
+            })
+        })
+    })
+    test("200: the returned article array is sorted by created at date in descending order", () => {
+        return request(app).get("/api/articles").expect(200).then((response) => {
+            const {articles} = response.body
+            expect(articles).toBeSortedBy("created_at", {descending: true})
+        })
+    })
+})
+
+describe("ALL", () => {
+    test("404: returns a 404 status code and a relevent message when passed a non existant endpoint", () => {
+        return request(app).get("/api/not-an-endpoint").expect(404)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Not found")
+        })
+    })
+})
