@@ -52,3 +52,71 @@ describe("GET /api/articles/:article_id/comments", () => {
         })
     })
 })
+
+describe("POST /api/articles/:article_id/comments", () => {
+    test("201: creates a new record in the comments table for the given article_id using the provided object and then retutrns the newly created object", () => {
+        const newComment = {author: "lurker", body: "lurker's new comment"}
+        return request(app).post("/api/articles/2/comments").send(newComment).expect(201)
+        .then((response) => {
+            const {comment} = response.body
+            
+            expect(comment).toHaveProperty("comment_id", 19)
+            expect(comment).toHaveProperty("votes", 0)
+            expect(comment).toHaveProperty("created_at", expect.any(String))
+            expect(comment).toHaveProperty("author", "lurker")
+            expect(comment).toHaveProperty("body", "lurker's new comment")
+            expect(comment).toHaveProperty("article_id", 2)
+        })
+    })
+    test("404: returns a 404 status code and a relevent message when a valid but non-existant id is passed", () => {
+        const newComment = {author: "lurker", body: "lurker's new comment"}
+        return request(app).post("/api/articles/99/comments").send(newComment).expect(404)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Not found")
+        })
+    })
+    test("400: returns a 400 status code and a relevent message when an invalid id is passed", () => {
+        const newComment = {author: "lurker", body: "lurker's new comment"}
+        return request(app).post("/api/articles/not-an-id/comments").send(newComment).expect(400)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+        })
+    })
+    test("404: returns a 404 status code and a relevent message when a valid but non-existant author is passed", () => {
+        const newComment = {author: "user_not_present", body: "this account doesn't exist"}
+        return request(app).post("/api/articles/2/comments").send(newComment).expect(404)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Not found")
+        })
+    })
+    test("400: returns a 400 status request and a relevent message when an invalid object is sent", () => {
+        const newComment = {username: "<-should be author", body: "this is an invalid object"}
+        return request(app).post("/api/articles/2/comments").send(newComment).expect(400)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+        })
+    })
+    test("400: returns a 400 status request and a relevent message when the passed object is missing the required keys", () => {
+        return request(app).post("/api/articles/2/comments").send({author: "lurker"}).expect(400)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+
+            return request(app).post("/api/articles/2/comments").send({body: "lurker's new comment"}).expect(400)
+        })
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+
+            return request(app).post("/api/articles/2/comments").send({}).expect(400)
+        })
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+        })
+    })
+})
