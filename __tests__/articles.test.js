@@ -75,6 +75,69 @@ describe("GET /api/articles", () => {
     })
 })
 
+describe("PATCH /api/articles/:article_id", () => {
+    test("200: increments the specified article's votes property by the given amount and returns the article object", () => {
+        const increase = {inc_votes: 15}
+        const decrease = {inc_votes: -30}
+        const expectedArticle = {
+            article_id: 1,
+            title: "Living in the shadow of a great man",
+            topic: "mitch",
+            author: "butter_bridge",
+            body: "I find this existence challenging",
+            created_at: "2020-07-09T20:11:00.000Z",
+            votes: 115,
+            article_img_url: "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        }
+        return request(app).patch("/api/articles/1").send(increase).expect(200)
+        .then((response) => {
+            const {article} = response.body
+            expect(article).toEqual(expectedArticle)
+            return request(app).patch("/api/articles/1").send(decrease).expect(200)
+        })
+        .then((response) => {
+            const {article} = response.body
+            expectedArticle.votes -= 30
+            expect(article).toEqual(expectedArticle)
+        })
+    })
+    test("404: returns a 404 status code and a relevent message when a valid but non-existant id is passed", () => {
+        const increase = {inc_votes: 15}
+        return request(app).patch("/api/articles/99").send(increase).expect(404)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Article not found")
+        })
+    })
+    test("400: returns a 400 status code and a relevent message when an invalid id is passed", () => {
+        const increase = {inc_votes: 15}
+        return request(app).patch("/api/articles/not-an-id").send(increase).expect(400)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+        })
+    })
+    test("400: returns a 400 status code when an invalid inc_votes object is passed", () => {
+        return request(app).patch("/api/articles/1").send({inc_votes: "not an int"}).expect(400)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+
+            return request(app).patch("/api/articles/1").send({wrong_key: "15"}).expect(400)
+        })
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+
+            return request(app).patch("/api/articles/1").send({}).expect(400)
+        })
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+        })
+    })
+})
+
 describe("ALL", () => {
     test("404: returns a 404 status code and a relevent message when passed a non existant endpoint", () => {
         return request(app).get("/api/not-an-endpoint").expect(404)
