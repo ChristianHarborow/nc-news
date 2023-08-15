@@ -101,16 +101,22 @@ describe("POST /api/articles/:article_id/comments", () => {
         })
     })
     test("400: returns a 400 status request and a relevent message when the passed object is missing the required keys", () => {
-        return Promise.all([
-            request(app).post("/api/articles/2/comments").send({author: "lurker"}).expect(400),
-            request(app).post("/api/articles/2/comments").send({body: "lurker's new comment"}).expect(400),
-            request(app).post("/api/articles/2/comments").send({}).expect(400)
-        ])
-        .then((responses) => {
-            responses.forEach((response) => {
-                const {msg} = response.body
-                expect(msg).toBe("Bad request")
-            })
+        return request(app).post("/api/articles/2/comments").send({author: "lurker"}).expect(400)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+
+            return request(app).post("/api/articles/2/comments").send({body: "lurker's new comment"}).expect(400)
+        })
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+
+            return request(app).post("/api/articles/2/comments").send({}).expect(400)
+        })
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
         })
     })
 })
