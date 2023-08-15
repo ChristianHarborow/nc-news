@@ -47,9 +47,6 @@ describe("GET /api/articles/:article_id", () => {
 })
 
 describe("GET /api/articles", () => {
-    test("200: returns a 200 status code", () => {
-        return request(app).get("/api/articles").expect(200)
-    })
     test("200: returns an array of all the articles stored in the articles table", () => {
         return request(app).get("/api/articles").expect(200).then((response) => {
             const {articles} = response.body
