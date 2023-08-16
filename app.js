@@ -2,6 +2,7 @@ const {getTopics} = require("./controllers/topics-controllers")
 const {getApiDetails} = require("./controllers/api-controllers")
 const {getArticles, getArticleById} = require("./controllers/articles-controllers")
 const {getCommentsByArticleId, postComment} = require("./controllers/comments-controllers")
+const {getUsers} = require("./controllers/users-controllers")
 const {handleCustomErrors, handleSqlErrors, handleServerErrors} = require("./error-handlers")
 const express = require("express")
 
@@ -18,6 +19,8 @@ app.get("/api/articles/:article_id", getArticleById)
 
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId)
 app.post("/api/articles/:article_id/comments", postComment)
+
+app.get("/api/users", getUsers)
 
 app.use((req, res) => {
     res.status(404).send({msg: "Not found"})
