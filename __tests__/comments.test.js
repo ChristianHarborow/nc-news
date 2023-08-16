@@ -120,3 +120,29 @@ describe("POST /api/articles/:article_id/comments", () => {
         })
     })
 })
+
+describe("DELETE /api/comments/:comment_id", () => {
+    test("204: Returns a status code of 204 when passed an existing comment id", () => {
+        return request(app).delete("/api/comments/1").expect(204)
+    })
+    test("404: returns a 404 status code and a relevent message when a valid but non-existant id is passed", () => {
+        return request(app).delete("/api/comments/99").expect(404)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Comment not found")
+        })
+    })
+    test("204->404: The comment with the specified id is deleted", () => {
+        return request(app).delete("/api/comments/1").expect(204)
+        .then(() => {
+            return request(app).delete("/api/comments/1").expect(404)
+        })
+    })
+    test("400: returns a 400 status code and a relevent message when an invalid id is passed", () => {
+        return request(app).delete("/api/comments/not-an-id").expect(400)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+        })
+    })
+})
