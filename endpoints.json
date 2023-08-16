@@ -57,6 +57,26 @@
       ]
     }
   },
+  "PATCH /api/articles/:article_id": {
+    "description": "increments the specified article's votes property and returns the article object",
+    "exampleRequestBody": {
+      "inc_votes": 15
+    },
+    "exampleResponse": {
+      "article": [
+        {
+          "article_id": 1,
+          "title": "Living in the shadow of a great man",
+          "topic": "mitch",
+          "author": "butter_bridge",
+          "body": "I find this existence challenging",
+          "created_at": "2020-07-09T20:11:00.000Z",
+          "votes": 115,
+          "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+        }
+      ]
+    }
+  },
   "POST /api/articles/:article_id/comments": {
     "description": "creates a comment with the specified article_id",
     "exampleRequestBody": {
@@ -87,5 +107,9 @@
         }
       ]
     }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "deletes the comment with the specified comment_id",
+    "exampleResponse": "204: No content"
   }
 }
