@@ -9,3 +9,15 @@ exports.readCommentsByArticleId = (articleId) => {
         return rows
     })
 }
+
+exports.insertComment = (articleId, {author, body}) => {
+    return db.query(`
+        INSERT INTO comments
+        (article_id, author, body)
+        VALUES ($1, $2, $3)
+        RETURNING *
+    `, [articleId, author, body])
+    .then(({rows}) => {
+        return rows[0]
+    })
+}
