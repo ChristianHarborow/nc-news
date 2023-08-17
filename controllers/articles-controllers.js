@@ -1,8 +1,15 @@
 const {readArticles, readArticleById, updateArticleById} = require("../models/articles-models")
+const {topicExists} = require("../models/topics-models")
 
 exports.getArticles = (req, res, next) => {
-    readArticles().then((rows) => {
-        res.status(200).send({articles: rows})
+    const {topic, sort_by, order} = req.query
+
+    const models = [readArticles(topic, sort_by, order)]
+    if (topic) models.push(topicExists(topic))
+
+    Promise.all(models)
+    .then((data) => {
+        res.status(200).send({articles: data[0]})
     })
     .catch((err) => {
         next(err)

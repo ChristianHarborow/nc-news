@@ -12,6 +12,27 @@ afterAll(() => {
     return db.end();
 });
 
+function isArticle(object, diffs={}) {
+    const properties = {
+        "author": expect.any(String),
+        "title": expect.any(String),
+        "article_id": expect.any(Number),
+        "topic": expect.any(String),
+        "created_at": expect.any(String),
+        "votes": expect.any(Number),
+        "article_img_url": expect.any(String),
+        "comment_count": expect.any(Number)
+    }
+
+    Object.assign(properties, diffs)
+
+    expect(Object.keys(object)).toHaveLength(8)
+
+    for(const [property, value] of Object.entries(properties)) {
+        expect(object).toHaveProperty(property, value)
+    }
+}
+
 describe("GET /api/articles/:article_id", () => {
     test("200: returns a 200 status code", () => {
         return request(app).get("/api/articles/1").expect(200)
@@ -53,24 +74,110 @@ describe("GET /api/articles", () => {
 
             expect(articles).toHaveLength(13)
 
-            articles.forEach((article) => {
-                expect(Object.keys(article)).toHaveLength(8)
-
-                expect(article).toHaveProperty("author", expect.any(String))
-                expect(article).toHaveProperty("title", expect.any(String))
-                expect(article).toHaveProperty("article_id", expect.any(Number))
-                expect(article).toHaveProperty("topic", expect.any(String))
-                expect(article).toHaveProperty("created_at", expect.any(String))
-                expect(article).toHaveProperty("votes", expect.any(Number))
-                expect(article).toHaveProperty("article_img_url", expect.any(String))
-                expect(article).toHaveProperty("comment_count", expect.any(Number))
-            })
+            articles.forEach(isArticle)
         })
     })
     test("200: the returned article array is sorted by created at date in descending order", () => {
         return request(app).get("/api/articles").expect(200).then((response) => {
             const {articles} = response.body
             expect(articles).toBeSortedBy("created_at", {descending: true})
+        })
+    })
+    
+    describe("Queries", () => {
+        describe("GET /api/articles?topic=topic_slug", () => {
+            test("200: returns an array of articles that contain the specified topic", () => {
+                return request(app).get("/api/articles?topic=mitch").expect(200)
+                .then((response) => {
+                    const {articles} = response.body
+
+                    expect(articles).toHaveLength(12)
+
+                    articles.forEach((article) => {
+                        isArticle(article, {topic: "mitch"})
+                    })
+                })
+            })
+            test("404: returns a 404 status code and a relevent message when a non-existant topic is passed", () => {
+                return request(app).get("/api/articles?topic=thebesttopic").expect(404).then((response) => {
+                    const {msg} = response.body
+                    expect(msg).toBe("Topic not found")
+                })
+            })
+        })
+        describe("GET /api/articles?sort_by=field_name", () => {
+            test("200: returns an array of articles that are sorted by the specified field", () => {
+                return request(app).get("/api/articles?sort_by=title").expect(200)
+                .then((response) => {
+                    const {articles} = response.body
+                    expect(articles).toHaveLength(13)
+                    articles.forEach(isArticle)
+                    expect(articles).toBeSortedBy("title", {descending: true})
+
+                    return request(app).get("/api/articles?sort_by=author").expect(200)
+                })
+                .then((response) => {
+                    const {articles} = response.body
+                    expect(articles).toHaveLength(13)
+                    articles.forEach(isArticle)
+                    expect(articles).toBeSortedBy("author", {descending: true})
+
+                    return request(app).get("/api/articles?sort_by=comment_count").expect(200)
+                })
+                .then((response) => {
+                    const {articles} = response.body
+                    expect(articles).toHaveLength(13)
+                    articles.forEach(isArticle)
+                    expect(articles).toBeSortedBy("comment_count", {descending: true})
+                })
+            })
+            test("400: returns a 400 status code and a relevent message when an invalid field name is passed", () => {
+                return request(app).get("/api/articles?sort_by=popularity").expect(400).then((response) => {
+                    const {msg} = response.body
+                    expect(msg).toBe("Bad request")
+                })
+            })
+        })
+        describe("GET /api/articles?order=asc/desc", () => {
+            test("200: returns an array of articles that are sorted in the specified order", () => {
+                return request(app).get("/api/articles?order=asc").expect(200)
+                .then((response) => {
+                    const {articles} = response.body
+                    expect(articles).toHaveLength(13)
+                    articles.forEach(isArticle)
+                    expect(articles).toBeSortedBy("created_at", {ascending: true})
+
+                    return request(app).get("/api/articles?order=desc").expect(200)
+                })
+                .then((response) => {
+                    const {articles} = response.body
+                    expect(articles).toHaveLength(13)
+                    articles.forEach(isArticle)
+                    expect(articles).toBeSortedBy("created_at", {descending: true})
+                })
+            })
+            test("400: returns a 400 status code and a relevent message when an invalid order is passed", () => {
+                return request(app).get("/api/articles?order=whichever").expect(400).then((response) => {
+                    const {msg} = response.body
+                    expect(msg).toBe("Bad request")
+                })
+            })
+        })
+        describe("Combinations", () => {
+            test("200: returns a filtered array of articles that are sorted using the specified field and order", () => {
+                return request(app).get("/api/articles?topic=mitch&sort_by=title&order=asc").expect(200)
+                .then((response) => {
+                    const {articles} = response.body
+
+                    expect(articles).toHaveLength(12)
+
+                    articles.forEach((article) => {
+                        isArticle(article, {topic: "mitch"})
+                    })
+
+                    expect(articles).toBeSortedBy("title", {ascending: true})
+                })
+            })
         })
     })
 })
