@@ -108,6 +108,16 @@
       ]
     }
   },
+  "GET /api/users/:username": {
+    "description": "serves a user with the specified username",
+    "exampleResponse": {
+      "user": {
+        "username": "butter_bridge",
+        "name": "jonny",
+        "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
+      }
+    }
+  },
   "DELETE /api/comments/:comment_id": {
     "description": "deletes the comment with the specified comment_id",
     "exampleResponse": "204: No content"
