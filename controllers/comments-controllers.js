@@ -1,4 +1,4 @@
-const {readCommentsByArticleId, insertComment, destroyComment, commentExists} = require("../models/comments-models")
+const {readCommentsByArticleId, insertComment, destroyComment, commentExists, updateComment} = require("../models/comments-models")
 const {readArticleById} = require("../models/articles-models")
 
 exports.getCommentsByArticleId = (req, res, next) => {
@@ -37,6 +37,18 @@ exports.deleteComment = (req, res, next) => {
     ])
     .then(() => {
         res.status(204).send()
+    })
+    .catch((err) => {
+        next(err)
+    })
+}
+
+exports.patchComment = (req, res, next) => {
+    const {comment_id} = req.params
+    const {inc_votes} = req.body
+
+    updateComment(inc_votes, comment_id).then((comment) => {
+        res.status(200).send({comment})
     })
     .catch((err) => {
         next(err)
