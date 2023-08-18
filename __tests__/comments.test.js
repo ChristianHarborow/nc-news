@@ -146,3 +146,64 @@ describe("DELETE /api/comments/:comment_id", () => {
         })
     })
 })
+
+describe("PATCH /api/comments/:comment_id", () => {
+    test("200: increments the specified comment's votes property by the given amount and returns the comment object", () => {
+        const increase = {inc_votes: 15}
+        const decrease = {inc_votes: -30}
+        const expectedComment = {
+            comment_id: 1,
+            body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+            votes: 31,
+            author: "butter_bridge",
+            article_id: 9,
+            created_at: "2020-04-06T12:17:00.000Z",
+        }
+        return request(app).patch("/api/comments/1").send(increase).expect(200)
+        .then((response) => {
+            const {comment} = response.body
+            expect(comment).toEqual(expectedComment)
+            return request(app).patch("/api/comments/1").send(decrease).expect(200)
+        })
+        .then((response) => {
+            const {comment} = response.body
+            expectedComment.votes -= 30
+            expect(comment).toEqual(expectedComment)
+        })
+    })
+    test("404: returns a 404 status code and a relevent message when a valid but non-existant id is passed", () => {
+        const increase = {inc_votes: 15}
+        return request(app).patch("/api/comments/99").send(increase).expect(404)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Comment not found")
+        })
+    })
+    test("400: returns a 400 status code and a relevent message when an invalid id is passed", () => {
+        const increase = {inc_votes: 15}
+        return request(app).patch("/api/comments/not-an-id").send(increase).expect(400)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+        })
+    })
+    test("400: returns a 400 status code when an invalid inc_votes object is passed", () => {
+        return request(app).patch("/api/comments/1").send({inc_votes: "not an int"}).expect(400)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+
+            return request(app).patch("/api/comments/1").send({wrong_key: "15"}).expect(400)
+        })
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+
+            return request(app).patch("/api/comments/1").send({}).expect(400)
+        })
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+        })
+    })
+})
