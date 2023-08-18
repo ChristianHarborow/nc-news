@@ -26,6 +26,28 @@
       ]
     }
   },
+  "POST /api/articles": {
+    "description": "creates a new articles record and returns the newly created article object",
+    "exampleRequestBody": {
+      "author": "lurker",
+      "title": "New Article",
+      "body": "This is a new article",
+      "topic": "cats",
+      "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+    },
+    "exampleResponse": {
+      "article": {
+        "article_id": 14,
+        "author": "lurker",
+        "title": "New Article",
+        "body": "This is a new article",
+        "topic": "cats",
+        "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        "votes": 0,
+        "comment_count": 0
+      }
+    }
+  },
   "GET /api/articles/:article_id": {
     "description": "serves an article with the specified id",
     "exampleResponse": {
