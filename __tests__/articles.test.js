@@ -26,7 +26,7 @@ function isArticle(object, diffs={}) {
 
     Object.assign(properties, diffs)
 
-    expect(Object.keys(object)).toHaveLength(8)
+    expect(Object.keys(object)).toHaveLength(Object.keys(properties).length)
 
     for(const [property, value] of Object.entries(properties)) {
         expect(object).toHaveProperty(property, value)
@@ -238,6 +238,95 @@ describe("PATCH /api/articles/:article_id", () => {
             expect(msg).toBe("Bad request")
 
             return request(app).patch("/api/articles/1").send({}).expect(400)
+        })
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+        })
+    })
+})
+
+describe("POST /api/articles", () => {
+    test("201: Creates a new articles record using the provided object and returns the newly created article", () => {
+        const newArticle = {
+            author: "lurker",
+            title: "New Article",
+            body: "This is a new article",
+            topic: "cats",
+            article_img_url: "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+        }
+        return request(app).post("/api/articles").send(newArticle).expect(201)
+        .then((response) => {
+            const {article} = response.body
+            const expectedArticle = {
+                article_id: 14,
+                votes: 0,
+                comment_count: 0
+            }
+            Object.assign(expectedArticle, newArticle)
+
+            isArticle(article, expectedArticle)
+        })
+    })
+
+    test("201: If article_img_url is not provided a default value is used", () => {
+        const newArticle = {
+            author: "lurker",
+            title: "New Article",
+            body: "This is a new article",
+            topic: "cats"
+        }
+        return request(app).post("/api/articles").send(newArticle).expect(201)
+        .then((response) => {
+            const {article} = response.body
+            const expectedArticle = {
+                article_id: 14,
+                votes: 0,
+                comment_count: 0,
+                article_img_url: "https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700"
+            }
+            Object.assign(expectedArticle, newArticle)
+
+            isArticle(article, expectedArticle)
+        })
+    })
+
+    test("404: returns a 404 status code when a non existant author or topic is passed", () => {
+        const newArticle = {
+            author: "not a user",
+            title: "New Article",
+            body: "This is a new article",
+            topic: "cats"
+        }
+        return request(app).post("/api/articles").send(newArticle).expect(404)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Not found")
+
+            newArticle.author = "lurker"
+            newArticle.topic = "not a topic"
+            return request(app).post("/api/articles").send(newArticle).expect(404)
+        })
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Not found")
+        })
+    })
+
+    test("400: returns a 400 status code and relevent error message when require keys are missing from request object", () => {
+        const newArticle = {
+            title: "New Article",
+            body: "This is a new article",
+            topic: "cats"
+        }
+        return request(app).post("/api/articles").send(newArticle).expect(400)
+        .then((response) => {
+            const {msg} = response.body
+            expect(msg).toBe("Bad request")
+
+            newArticle.author = "lurker"
+            delete newArticle.body
+            return request(app).post("/api/articles").send(newArticle).expect(400)
         })
         .then((response) => {
             const {msg} = response.body
