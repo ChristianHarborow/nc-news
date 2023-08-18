@@ -1,4 +1,4 @@
-const {readArticles, readArticleById, updateArticleById} = require("../models/articles-models")
+const {readArticles, readArticleById, updateArticleById, createArticle} = require("../models/articles-models")
 const {topicExists} = require("../models/topics-models")
 
 exports.getArticles = (req, res, next) => {
@@ -37,6 +37,20 @@ exports.patchArticleById = (req, res, next) => {
     ])
     .then((data) => {
         res.status(200).send({article: data[0]})
+    })
+    .catch((err) => {
+        next(err)
+    })
+}
+
+exports.postArticle = (req, res, next) => {
+    const {author, title, body, topic, article_img_url} = req.body
+
+    createArticle(author, title, body, topic, article_img_url).then((article_id) => {
+        return readArticleById(article_id)
+    })
+    .then((article) => {
+        res.status(201).send({article})
     })
     .catch((err) => {
         next(err)
