@@ -67,3 +67,19 @@ exports.updateArticleById = (article_id, inc_votes) => {
         return rows[0]
     })
 }
+
+exports.createArticle = (author, title, body, topic, articleImgUrl) => {
+    const queryValues = [author, title, body, topic]
+    if (articleImgUrl) queryValues.push(articleImgUrl) 
+
+    return db.query(`
+        INSERT INTO articles
+        (author, title, body, topic${articleImgUrl ? ", article_img_url" : ""})
+        VALUES
+        ($1, $2, $3, $4${articleImgUrl ? ", $5" : ""})
+        RETURNING article_id
+    `, queryValues)
+    .then(({rows}) => {
+        return rows[0].article_id
+    })
+}
